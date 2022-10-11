@@ -2,16 +2,25 @@ import tarfile
 import re
 
 tar = tarfile.open('./enron_mail_20150507.tar.gz', mode='r:gz')
+
 regexDollar = re.compile('(\$[0-9]+([.,][0-9]+)?\s?((B|[Bb]illions?)?|(MM|[Mm]illions?)?|([Kk]|M)?)?\s)')
+regexEmail = re.compile('([A-Za-z0-9]+[.-_])*[A-Za-z0-9]+@[A-Za-z0-9-]+(\.[A-Z|a-z]{2,})+')
+regexUrl = re.compile('((http://|https://)?(www.)([a-zA-Z])+.[a-z]+(.[a-z]+)+)')
 
 maxValue = 0
 maxValueStr = ''
 maxValueMember = None
 
+maxEmails = 0
+maxEmailsMember = None
+
+addrAmount = {}
+
 for member in tar.getmembers():
     file = tar.extractfile(member)
     if file:
         f = file.read()
+        #b
         matchDollar = regexDollar.findall(str(f.strip()))
         for match in matchDollar:
             value = re.search('[0-9]+(.[0-9]+)?', match[0]).group().replace(',','')
@@ -26,5 +35,34 @@ for member in tar.getmembers():
                 maxValue = value
                 maxValueStr = match[0]
                 maxValueMember = member
+        #c
+        # extremamente lento, devido a enorme quantidade de emails
+        matchEmail = regexEmail.findall(str(f.strip()))
+        if len(matchEmail) > maxEmails:
+            maxEmails = len(matchEmail)
+            maxEmailsMember = member
+        #d
+        matchURL = regexUrl.findall(str(f.strip()))
+        for match in matchURL:
+            if match[0] in addrAmount:
+                addrAmount[match[0]] +=1
+            else:
+                addrAmount[match[0]] = 1
 
+sortedAddrAmount = {k: v for k, v in sorted(addrAmount.items(), key=lambda item: item[1], reverse=True)}
+        
+
+# b)
 print(f"Maior valor em dólar de {maxValueStr} encontrado no arquivo {maxValueMember.name}")
+
+# c)
+print(f"Maior número de emails ({maxEmails}) na mensagem {maxEmailsMember}")
+
+# d)
+print(f"""URLs mais frequentes:
+{list(sortedAddrAmount.keys())[0]}: {list(sortedAddrAmount.values())[0]} correspondências
+{list(sortedAddrAmount.keys())[1]}: {list(sortedAddrAmount.values())[1]} correspondências
+{list(sortedAddrAmount.keys())[2]}: {list(sortedAddrAmount.values())[2]} correspondências
+{list(sortedAddrAmount.keys())[3]}: {list(sortedAddrAmount.values())[3]} correspondências
+{list(sortedAddrAmount.keys())[4]}: {list(sortedAddrAmount.values())[4]} correspondências
+""")
