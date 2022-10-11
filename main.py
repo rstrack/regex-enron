@@ -38,7 +38,6 @@ for member in tar.getmembers():
         # extremamente lento, devido a enorme quantidade de emails
         matchEmail = regexEmail.findall(str(f.strip(), 'utf-8'))
         if len(matchEmail) > maxEmails:
-            print(len(matchEmail))
             maxEmails = len(matchEmail)
             maxEmailsMember = member
         #d
@@ -56,7 +55,7 @@ sortedAddrAmount = {k: v for k, v in sorted(addrAmount.items(), key=lambda item:
 print(f"Maior valor em dólar de {maxValueStr} encontrado no arquivo {maxValueMember.name}")
 
 # c)
-print(f"Maior número de emails ({maxEmails}) na mensagem {maxEmailsMember}")
+print(f"Maior número de emails ({maxEmails}) na mensagem {maxEmailsMember.name}")
 
 # d)
 print(f"""URLs mais frequentes:
