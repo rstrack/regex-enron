@@ -13,12 +13,21 @@ maxValueMember = None
 
 maxEmails = 0
 maxEmailsMember = None
+emailNumber = 0
 
 addrAmount = {}
 for member in tar.getmembers():
     file = tar.extractfile(member)
     if file:
         f = file.read()
+        #a
+        matchEmailNumber = regexEmail.findall(str(f.strip(), 'utf-8'))
+        for match in matchEmailNumber:
+            print(match[0])
+        emailNumber = len(matchEmailNumber)
+        #Devido aos emails possuírem a terminação ".com", é impossível saber o país de residência do email.
+        #Portanto, optamos por fazer uma contagem total dos emails.
+
         #b
         matchDollar = regexDollar.findall(str(f.strip(), 'utf-8'))
         for match in matchDollar:
@@ -50,6 +59,8 @@ for member in tar.getmembers():
     
 sortedAddrAmount = {k: v for k, v in sorted(addrAmount.items(), key=lambda item: item[1], reverse=True)}
         
+# a)
+print(f"Número de emails: {emailNumber}")
 
 # b)
 print(f"Maior valor em dólar de {maxValueStr} encontrado no arquivo {maxValueMember.name}")
