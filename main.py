@@ -1,6 +1,7 @@
 import tarfile
 import re
 import io
+import time
 
 tar = tarfile.open('./enron_mail_20150507.tar.gz', mode='r:gz')
 
@@ -8,6 +9,7 @@ regexCountries = re.compile('(AF|AX|AL|DZ|AS|AD|AO|AI|AQ|AG|AR|AM|AW|AU|AT|AZ|BS
 regexDollar = re.compile('(\$[0-9]+([.,][0-9]+)?\s?((B|[Bb]illions?)?|(MM|[Mm]illions?)?|([Kk]|M)?)?\s)')
 regexEmail = re.compile('(([A-Za-z0-9]+[.-_])*[A-Za-z0-9]+@[A-Za-z0-9-]+(\.[A-Z|a-z]{2,})+)')
 regexUrl = re.compile('((http://|https://)?(www.)([a-zA-Z])+.[a-z]+(.[a-z]+)+)')
+regexPrice = re.compile('(price)')
 
 countries = []
 
@@ -18,7 +20,10 @@ maxValueMember = None
 maxEmails = 0
 maxEmailsMember = None
 
+priceNumber = 0
+
 addrAmount = {}
+# inicio = time.time()
 for member in tar.getmembers():
     fileBin = tar.extractfile(member)
     if fileBin:
@@ -57,7 +62,14 @@ for member in tar.getmembers():
                     addrAmount[match[0]] +=1
                 else:
                     addrAmount[match[0]] = 1
-    
+            #f
+            matchPrice = regexPrice.findall(str(f.strip()))
+            for match in matchPrice:
+                print("Achou!")
+                priceNumber += 1        
+# fim = time.time()
+# tempoPrice = (fim - inicio)
+
 sortedAddrAmount = {k: v for k, v in sorted(addrAmount.items(), key=lambda item: item[1], reverse=True)}
         
 # a)
@@ -77,3 +89,10 @@ print(f"""URLs mais frequentes:
 {list(sortedAddrAmount.keys())[3]}: {list(sortedAddrAmount.values())[3]} correspondências
 {list(sortedAddrAmount.keys())[4]}: {list(sortedAddrAmount.values())[4]} correspondências
 """)
+
+#f)
+print(f"Price(s) encontrados(s): {priceNumber}")
+# print(f"Tempo total do regex: {tempoPrice}")
+#durante o teste rodando apenas o regex do price os resultados obtidos foram:
+# Price(s) encontrados(s): 517401
+# Tempo total do regex: 58.482699155807495
