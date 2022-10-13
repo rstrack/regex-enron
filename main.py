@@ -63,7 +63,7 @@ for member in tar.getmembers():
                 else:
                     addrAmount[match[0]] = 1
             #f
-            matchPrice = regexPrice.findall(str(f.strip()))
+            matchPrice = regexPrice.findall(str(line.strip()))
             for match in matchPrice:
                 print("Achou!")
                 priceNumber += 1        
