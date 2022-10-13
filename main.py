@@ -2,6 +2,7 @@ import tarfile
 import re
 import time
 
+
 tar = tarfile.open('./enron_mail_20150507.tar.gz', mode='r:gz')
 
 regexDollar = re.compile('(\$[0-9]+([.,][0-9]+)?\s?((B|[Bb]illions?)?|(MM|[Mm]illions?)?|([Kk]|M)?)?\s)')
@@ -17,6 +18,33 @@ maxEmails = 0
 maxEmailsMember = None
 emailNumber = 0
 priceNumber = 0
+priceTime = 0
+priceTimeBoyreMoore = 0
+
+#f)
+NO_OF_CHARS = 256
+def badCharHeuristic(string, size):
+	badChar = [-1]* NO_OF_CHARS
+	for i in range(size):
+		badChar[ord(string[i])] = i
+	return badChar
+
+def boyerMoore(txt, pat):
+  s = 0
+  m = len(pat)
+  n = len(txt)
+  badChar = badCharHeuristic(pat, m)
+
+  while(s <= n-m):
+    j = m-1
+
+    while j>=0 and pat[j] == txt[s+j]:
+      j -= 1
+
+    if j<0:
+      s += (m-badChar[ord(txt[s+m])] if s+m<n else 1)
+    else:
+      s += max(1, j-badChar[ord(txt[s+j])])
 
 addrAmount = {}
 # inicio = time.time()
@@ -62,10 +90,14 @@ for member in tar.getmembers():
                 addrAmount[match[0]] = 1
 
         #f
+        _auxPriceTime = time.time()
         matchPrice = regexPrice.findall(str(f.strip()))
-        for match in matchPrice:
-            print("Achou!")
-        priceNumber += 1
+        priceNumber += len(matchPrice)
+        priceTime += time.time() - _auxPriceTime
+
+        _auxPriceTimeBoyreMoore = time.time()
+        boyerMoore(str(f.strip()), "price")
+        priceTimeBoyreMoore += time.time() - _auxPriceTimeBoyreMoore
         
 # fim = time.time()
 # tempoPrice = (fim - inicio)
@@ -90,7 +122,10 @@ print(f"""URLs mais frequentes:
 {list(sortedAddrAmount.keys())[4]}: {list(sortedAddrAmount.values())[4]} correspondências
 """)
 
-#f)
+# f)
+print(f"Tempo findall: {priceTime}")
+print(f"Tempo Boyre Moore: {priceTimeBoyreMoore}")
+
 print(f"Price(s) encontrados(s): {priceNumber}")
 # print(f"Tempo total do regex: {tempoPrice}")
 #durante o teste rodando apenas o regex do price os resultados obtidos foram:
